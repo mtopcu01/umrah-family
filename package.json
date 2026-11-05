@@ -1,0 +1,11 @@
+{
+  "name": "umrah-family",
+  "private": true,
+  "type": "module",
+  "description": "Password-protected Umrah 2026 trip documents (Family).",
+  "scripts": {
+    "encrypt": "node scripts/encrypt.mjs",
+    "check": "node scripts/check-published.mjs",
+    "serve": "python3 -m http.server 8080 -d docs"
+  }
+}

@@ -1,0 +1,8 @@
+# Plaintext trip data, translations of it, and photos. Never commit these.
+private/
+*.pdf
+
+node_modules/
+.DS_Store
+
+.claude/
