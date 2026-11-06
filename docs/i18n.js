@@ -98,6 +98,9 @@ window.I18N = {
     validForTrip: 'Valid 6+ months after {date} ✓',
     notValidForTrip: 'Expires less than 6 months after {date} ✗',
     tripName: 'Umrah 2026',
+    umrahPassport: 'Umrah Passport',
+    verseRef: 'Al-Baqarah 2:196',
+    tapToOpen: 'Tap to open',
 
     visaNumber: 'Visa number',
     visaType: 'Type',
@@ -216,6 +219,9 @@ window.I18N = {
     validForTrip: '{date} sonrasında 6 aydan fazla geçerli ✓',
     notValidForTrip: '{date} sonrasında 6 aydan az geçerli ✗',
     tripName: 'Umre 2026',
+    umrahPassport: 'Umre Pasaportu',
+    verseRef: 'Bakara 2:196',
+    tapToOpen: 'Açmak için dokunun',
 
     visaNumber: 'Vize numarası',
     visaType: 'Tür',

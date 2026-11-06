@@ -17,6 +17,7 @@
     data: null,
     tr: {},
     photos: {},
+    booksOpen: new Set(),
     people: [],
     cats: [],
     errorKey: '',
@@ -445,31 +446,70 @@
     });
   }
 
+  // Made-up emblem for the passport book cover: an 8-point star around the Kaaba. Not any country's emblem.
+  const EMBLEM = `<svg class="bk-emblem" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor">
+    <circle cx="50" cy="50" r="47" stroke-width="1.6"/><circle cx="50" cy="50" r="43" stroke-width="0.7"/>
+    <path d="M22 22H78V78H22Z M50 10.4 89.6 50 50 89.6 10.4 50Z" stroke-width="1.3" stroke-linejoin="round"/>
+    <circle cx="50" cy="50" r="27" stroke-width="0.7"/>
+    <g stroke="none" fill="currentColor">
+      <path d="M38 43.5 45 39.5H66L59 43.5Z" opacity=".75"/>
+      <path d="M59 43.5 66 39.5V59.5L59 64Z" opacity=".55"/>
+      <path d="M38 43.5H59V64H38Z"/>
+    </g>
+    <path d="M38 48.5H59L66 44" stroke="#123F36" stroke-width="1.6"/>
+    <path d="M51 64V55.5H55.5V64" fill="#123F36" stroke="none"/>
+  </svg>`;
+  const VERSE = 'وَأَتِمُّوا الْحَجَّ وَالْعُمْرَةَ لِلَّهِ';
+
   function passportUnits(p) {
     const pp = p.passport;
     if (!pp) return [];
     const valid = pp.expires >= addMonths(TRIP_END, 6);
     const photo = st.photos[p.id] ? `<img src="${st.photos[p.id]}" alt="">` : esc(initial(p));
     const nat = tx(pp.nationality);
-    return [unit(`<article class="card pp">
-      <header class="pp-h stars"><span class="pp-name">${esc(p.name)}</span><span class="pp-tag">${esc(U(t('passport')))} · ${esc(U(nat))}</span></header>
-      <div class="pp-body">
-        <div class="pp-photo" aria-hidden="true">${photo}</div>
-        <div class="pp-fields">
-          ${field(t('passportNumber'), `<span class="pp-num">${esc(pp.number)}</span>`, 'full')}
-          ${field(t('nationality'), esc(nat))}
-          ${field(t('sex'), esc(t(`sex_${pp.sex}`)))}
-          ${field(t('dateOfBirth'), esc(fmtDate(pp.dateOfBirth)))}
-          ${field(t('placeOfBirth'), esc(tx(pp.placeOfBirth)))}
-          ${field(t('issued'), esc(fmtDate(pp.issued)))}
-          ${field(t('expires'), esc(fmtDate(pp.expires)))}
+    const open = st.booksOpen.has(p.id) ? ' open' : '';
+    return [unit(`<div class="bk${open}" data-action="book" data-id="${esc(p.id)}" role="button" tabindex="0" aria-label="${esc(`${t('passport')}: ${p.name}`)}">
+      <div class="bk-book">
+        <article class="bk-page pp">
+          <header class="pp-h stars"><span class="pp-name">${esc(p.name)}</span><span class="pp-tag">${esc(U(t('passport')))} · ${esc(U(nat))}</span></header>
+          <div class="pp-body">
+            <div class="pp-photo" aria-hidden="true">${photo}</div>
+            <div class="pp-fields">
+              ${field(t('passportNumber'), `<span class="pp-num">${esc(pp.number)}</span>`, 'full')}
+              ${field(t('nationality'), esc(nat))}
+              ${field(t('sex'), esc(t(`sex_${pp.sex}`)))}
+              ${field(t('dateOfBirth'), esc(fmtDate(pp.dateOfBirth)))}
+              ${field(t('placeOfBirth'), esc(tx(pp.placeOfBirth)))}
+              ${field(t('issued'), esc(fmtDate(pp.issued)))}
+              ${field(t('expires'), esc(fmtDate(pp.expires)))}
+            </div>
+          </div>
+          <footer class="pp-f">
+            <span class="${valid ? 'ok' : 'bad'}">${esc(t(valid ? 'validForTrip' : 'notValidForTrip', { date: fmtDate(TRIP_END) }))}</span>
+            <span>${esc(t('tripName'))}</span>
+          </footer>
+        </article>
+        <div class="bk-cover">
+          <div class="bk-front" aria-hidden="true"><div class="bk-art">
+            <div class="bk-title">${esc(U(t('umrahPassport')))}</div>
+            ${EMBLEM}
+            <div class="bk-year">1448 · 2026</div>
+            <div class="bk-owner">${esc(U(p.first))}</div>
+          </div></div>
+          <div class="bk-back"><div class="bk-inside">
+            <p class="bk-verse" lang="ar" dir="rtl">${VERSE}</p>
+            <p class="bk-ref">${esc(t('verseRef'))}</p>
+          </div></div>
         </div>
       </div>
-      <footer class="pp-f">
-        <span class="${valid ? 'ok' : 'bad'}">${esc(t(valid ? 'validForTrip' : 'notValidForTrip', { date: fmtDate(TRIP_END) }))}</span>
-        <span>${esc(t('tripName'))}</span>
-      </footer>
-    </article>`)];
+      <span class="bk-hint" aria-hidden="true">${esc(t('tapToOpen'))}</span>
+    </div>`)];
+  }
+
+  // Passport books stay shut until tapped; a second tap closes them.
+  function toggleBook(b) {
+    b.classList.toggle('open');
+    if (b.classList.contains('open')) st.booksOpen.add(b.dataset.id); else st.booksOpen.delete(b.dataset.id);
   }
 
   function visaUnits(p) {
@@ -710,11 +750,16 @@
       case 'cat': toggle(st.cats, b.dataset.id); saveSel(); render(); break;
       case 'to-people': go('people'); break;
       case 'to-categories': go('categories'); break;
-      case 'display': go('results'); break;
+      case 'display': st.booksOpen.clear(); go('results'); break;
+      case 'book': toggleBook(b); break;
       case 'restart': st.people = []; st.cats = []; saveSel(); go('people'); break;
       case 'pdf': exportPdf(); break;
       default:
     }
+  });
+  app.addEventListener('keydown', (e) => {
+    const b = e.target.closest?.('.bk');
+    if (b && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggleBook(b); }
   });
   app.addEventListener('submit', (e) => {
     if (e.target.id !== 'unlock') return;

@@ -559,52 +559,225 @@ p { margin: 0; }
 }
 .key-stars { height: 30px; background: var(--stars) repeat-x left center / 28px 28px; border-top: 1px solid rgba(216, 195, 143, 0.15); }
 
-/* Passport (themed travel document, not a replica) */
-.pp { background: var(--sand); border-color: var(--sand-line); }
+/* Passport book (themed keepsake, not a replica: made-up emblem, no country, no machine-readable lines).
+   Laid out in its open frame: the hinge (spine) is the top edge of the photo page.
+   Closed, the whole book is turned -90deg so the spine sits on the left and the cover reads upright. */
+.bk {
+  --W: min(100cqw, 460px);
+  --H: calc(var(--W) * 0.704);
+  --u: calc(var(--W) / 343);
+  position: relative;
+  width: var(--W);
+  height: calc(var(--H) * 2);
+  margin: 0 auto;
+  perspective: calc(var(--W) * 4);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.bk:focus-visible { outline-offset: 6px; border-radius: 12px; }
+.bk-book {
+  position: absolute;
+  left: 0;
+  top: var(--H);
+  width: var(--W);
+  height: var(--H);
+  border-radius: calc(10 * var(--u));
+  background: #0E332B;
+  box-shadow: 0 calc(10 * var(--u)) calc(26 * var(--u)) rgba(8, 21, 33, 0.28), 0 1px 3px rgba(8, 21, 33, 0.25);
+  transform-style: preserve-3d;
+  transform: translateY(-50%) rotate(-90deg);
+  transition: transform 0.8s cubic-bezier(0.45, 0, 0.25, 1) 0.95s;
+}
+.bk.open .bk-book { transform: translateY(0) rotate(0deg); transition-delay: 0s; }
+
+/* Photo page: the page block sits slightly inside the back cover, flush with the spine */
+.bk-page {
+  position: absolute;
+  top: 0;
+  left: calc(6 * var(--u));
+  right: calc(6 * var(--u));
+  bottom: calc(6 * var(--u));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 0 0 calc(6 * var(--u)) calc(6 * var(--u));
+  background:
+    linear-gradient(to bottom, rgba(18, 63, 54, 0.16), transparent calc(12 * var(--u))),
+    repeating-radial-gradient(circle at 78% 60%, transparent 0 calc(9 * var(--u)), rgba(176, 138, 62, 0.07) calc(9 * var(--u)) calc(10 * var(--u))),
+    var(--sand);
+  box-shadow: inset 0 0 0 1px var(--sand-line);
+}
 .pp-h {
   background: var(--deep);
   color: #fff;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  border-bottom: 2px solid var(--gold);
+  gap: calc(8 * var(--u));
+  padding: calc(7 * var(--u)) calc(11 * var(--u));
+  border-bottom: calc(1.5 * var(--u)) solid var(--gold);
 }
-.pp-name { font: 400 19px/1.2 var(--serif); }
-.pp-tag { font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; color: var(--light-gold); text-align: right; }
-.pp-body { display: grid; grid-template-columns: 96px 1fr; gap: 16px; padding: 16px; }
+.pp-name { font: 400 calc(15 * var(--u))/1.2 var(--serif); position: relative; z-index: 1; }
+.pp-tag { font-size: calc(8.5 * var(--u)); font-weight: 700; letter-spacing: 0.12em; color: var(--light-gold); text-align: right; position: relative; z-index: 1; }
+.pp-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: calc(80 * var(--u)) 1fr;
+  gap: calc(11 * var(--u));
+  padding: calc(10 * var(--u)) calc(11 * var(--u));
+  min-height: 0;
+}
 .pp-photo {
-  width: 96px; height: 120px;
-  border-radius: 8px;
+  width: calc(80 * var(--u));
+  height: calc(102 * var(--u));
+  border-radius: calc(5 * var(--u));
   background: #DCE6E2;
-  border: 4px solid #fff;
+  border: calc(3 * var(--u)) solid #fff;
   box-shadow: 0 0 0 1px var(--sand-line);
   display: grid;
   place-items: center;
-  font: 400 40px var(--serif);
+  font: 400 calc(34 * var(--u)) var(--serif);
   color: var(--deep);
   overflow: hidden;
 }
 .pp-photo img { width: 100%; height: 100%; object-fit: cover; }
-.pp-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; min-width: 0; }
+.pp-fields { display: grid; grid-template-columns: 1fr 1fr; gap: calc(6 * var(--u)) calc(10 * var(--u)); min-width: 0; align-content: start; }
 .pp-fields .full { grid-column: 1 / -1; }
-.pp-num { font: 400 25px/1.15 var(--serif); color: var(--deep); letter-spacing: 0.03em; }
+.pp-fields .lb { font-size: calc(8.3 * var(--u)); letter-spacing: 0.1em; }
+.pp-fields .v { font-size: calc(12.5 * var(--u)); line-height: 1.3; }
+.pp-num { font: 400 calc(19 * var(--u))/1.15 var(--serif); color: var(--deep); letter-spacing: 0.04em; }
 .pp-f {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
+  gap: calc(8 * var(--u));
   border-top: 1px dashed var(--sand-line);
-  padding: 10px 16px;
-  font-size: 12px;
+  padding: calc(6 * var(--u)) calc(11 * var(--u));
+  font-size: calc(10 * var(--u));
   color: var(--muted);
 }
 .ok { color: var(--mid); font-weight: 600; }
 .bad { color: var(--red); font-weight: 700; }
-@container (max-width: 360px) {
-  .pp-body { grid-template-columns: 72px 1fr; gap: 12px; }
-  .pp-photo { width: 72px; height: 92px; font-size: 30px; }
-  .pp-fields { grid-template-columns: 1fr; }
+
+/* Cover: hinged on the top edge, flips up and over to show the inside cover above the page */
+.bk-cover {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 0;
+  transform-style: preserve-3d;
+  transform: rotateX(0deg) translateZ(1px);
+  transition: transform 0.9s cubic-bezier(0.35, 0, 0.2, 1) 0s;
+}
+.bk.open .bk-cover { transform: rotateX(180deg) translateZ(1px); transition-delay: 0.85s; }
+.bk-front, .bk-back {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: calc(10 * var(--u));
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.bk-front {
+  background:
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.38), rgba(0, 0, 0, 0.12) calc(9 * var(--u)), transparent calc(16 * var(--u))),
+    linear-gradient(to bottom, transparent calc(17 * var(--u)), rgba(216, 195, 143, 0.35) calc(17 * var(--u)), rgba(216, 195, 143, 0.35) calc(18 * var(--u)), transparent calc(18 * var(--u))),
+    radial-gradient(120% 90% at 50% 55%, #1A4C41, var(--deep) 60%, #0D3029);
+}
+/* Cover art is portrait, turned to match the book's closed orientation */
+.bk-art {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--H);
+  height: var(--W);
+  transform: translate(-50%, -50%) rotate(90deg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(34 * var(--u)) calc(18 * var(--u)) calc(30 * var(--u)) calc(30 * var(--u));
+  color: var(--light-gold);
+  text-align: center;
+}
+.bk-art::before {
+  content: '';
+  position: absolute;
+  inset: calc(12 * var(--u)) calc(10 * var(--u)) calc(12 * var(--u)) calc(22 * var(--u));
+  border: 1px solid rgba(216, 195, 143, 0.45);
+  border-radius: calc(5 * var(--u));
+}
+.bk-title { font: 500 calc(21 * var(--u))/1.25 var(--serif); letter-spacing: 0.14em; max-width: 9em; }
+.bk-emblem { width: calc(118 * var(--u)); height: calc(118 * var(--u)); color: #D2B577; }
+.bk-year { font-size: calc(10 * var(--u)); font-weight: 700; letter-spacing: 0.24em; }
+.bk-owner { font: italic 400 calc(12 * var(--u)) var(--serif); letter-spacing: 0.12em; color: rgba(216, 195, 143, 0.8); }
+.bk-year + .bk-owner { margin-top: calc(-14 * var(--u)); }
+
+/* Inside cover: paper glued onto the cover, hinge side at the bottom */
+.bk-back { transform: rotateX(180deg); background: #0E332B; }
+.bk-inside {
+  position: absolute;
+  top: calc(6 * var(--u));
+  left: calc(6 * var(--u));
+  right: calc(6 * var(--u));
+  bottom: 0;
+  border-radius: calc(6 * var(--u)) calc(6 * var(--u)) 0 0;
+  background:
+    linear-gradient(to top, rgba(18, 63, 54, 0.16), transparent calc(12 * var(--u))),
+    var(--soft-gold);
+  box-shadow: inset 0 0 0 1px var(--sand-line);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(10 * var(--u));
+  padding: calc(16 * var(--u));
+}
+.bk-inside::before {
+  content: '';
+  position: absolute;
+  inset: calc(10 * var(--u));
+  border: 1px solid rgba(176, 138, 62, 0.45);
+  border-radius: calc(4 * var(--u));
+  background:
+    var(--stars) repeat-x left calc(4 * var(--u)) / calc(16 * var(--u)) calc(16 * var(--u)),
+    var(--stars) repeat-x left calc(100% - 4 * var(--u)) / calc(16 * var(--u)) calc(16 * var(--u));
+  opacity: 0.9;
+}
+.bk-verse {
+  position: relative;
+  font: 400 calc(30 * var(--u))/1.9 'Amiri', var(--serif);
+  color: var(--deep);
+  text-align: center;
+}
+.bk-ref {
+  position: relative;
+  font-size: calc(9.5 * var(--u));
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--gold);
+}
+
+.bk-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--H) * 0.06);
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  transition: opacity 0.3s;
+}
+.bk.open .bk-hint { opacity: 0; }
+
+/* PDF and print show the open book flat */
+.pdf-stage .bk-book { transform: none; transition: none; }
+.pdf-stage .bk-cover { transform: none; transition: none; top: auto; bottom: 100%; height: 100%; }
+.pdf-stage .bk-front, .pdf-stage .bk-hint { display: none; }
+.pdf-stage .bk-back { transform: none; }
+.pdf-stage .bk { --W: 420px; }
+@media (prefers-reduced-motion: reduce) {
+  .bk-book, .bk-cover { transition: none !important; }
 }
 
 /* Visa */
@@ -728,6 +901,10 @@ p { margin: 0; }
   .content { padding: 0; max-width: none; }
   .grid, .grid.wide { display: block; }
   .unit, .alert, .sec-h { break-inside: avoid; page-break-inside: avoid; }
+  .bk-book { transform: none !important; }
+  .bk-cover { transform: none !important; top: auto; bottom: 100%; height: 100%; }
+  .bk-front, .bk-hint { display: none; }
+  .bk-back { transform: none; }
   .unit { margin-bottom: 14px; }
   .sec-h { break-after: avoid; page-break-after: avoid; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
