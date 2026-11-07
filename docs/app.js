@@ -18,6 +18,7 @@
     tr: {},
     photos: {},
     booksOpen: new Set(),
+    envOpen: new Set(),
     people: [],
     cats: [],
     errorKey: '',
@@ -459,6 +460,26 @@
     <path d="M38 48.5H59L66 44" stroke="#123F36" stroke-width="1.6"/>
     <path d="M51 64V55.5H55.5V64" fill="#123F36" stroke="none"/>
   </svg>`;
+  // Wax seal (red wax with the site's 8-point star) and the brass-and-wood stamp that presses it.
+  let svgN = 0;
+  const wax = (n) => `<svg viewBox="0 0 100 100"><defs><radialGradient id="wx${n}" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#C33A36"/><stop offset=".6" stop-color="#9C1E22"/><stop offset="1" stop-color="#6E1216"/></radialGradient></defs>
+    <path d="M50 3C61 2 70 8 79 12C89 18 96 28 97 40C99 52 96 62 91 72C85 83 76 91 64 95C53 98 42 98 31 94C20 89 10 81 6 69C2 58 2 46 6 35C10 23 18 14 29 8C36 5 43 3 50 3Z" fill="url(#wx${n})"/>
+    <circle cx="50" cy="50" r="31" fill="none" stroke="#6E1216" stroke-width="3" opacity=".7"/>
+    <circle cx="50" cy="50" r="31" fill="none" stroke="#E07A6E" stroke-width="1" opacity=".45" transform="translate(-1 -1)"/>
+    <path d="M37 37H63V63H37Z M50 31.6 68.4 50 50 68.4 31.6 50Z" fill="none" stroke="#6E1216" stroke-width="2.6" stroke-linejoin="round"/>
+    <path d="M37 37H63V63H37Z M50 31.6 68.4 50 50 68.4 31.6 50Z" fill="none" stroke="#E58E80" stroke-width="1" stroke-linejoin="round" opacity=".5" transform="translate(-.8 -.8)"/>
+    <circle cx="50" cy="50" r="4" fill="#6E1216"/>
+    <ellipse cx="34" cy="24" rx="14" ry="6" fill="#fff" opacity=".18" transform="rotate(-25 34 24)"/>
+  </svg>`;
+  const stampTool = (n) => `<svg viewBox="0 0 60 126"><defs>
+    <linearGradient id="wd${n}" x1="0" x2="1"><stop offset="0" stop-color="#5A3820"/><stop offset=".45" stop-color="#8A5A34"/><stop offset="1" stop-color="#4A2C18"/></linearGradient>
+    <linearGradient id="br${n}" x1="0" x2="1"><stop offset="0" stop-color="#8C6A2C"/><stop offset=".4" stop-color="#E2C27A"/><stop offset="1" stop-color="#7A5A22"/></linearGradient></defs>
+    <ellipse cx="30" cy="16" rx="15" ry="14" fill="url(#wd${n})"/>
+    <path d="M24 27C25 45 21 62 20 78H40C39 62 35 45 36 27Z" fill="url(#wd${n})"/>
+    <rect x="17" y="76" width="26" height="13" rx="2" fill="url(#br${n})"/>
+    <path d="M15 89H45L52 116H8Z" fill="url(#br${n})"/>
+    <rect x="8" y="116" width="44" height="8" rx="1.5" fill="#6E5220"/>
+  </svg>`;
   const VERSE = 'وَأَتِمُّوا الْحَجَّ وَالْعُمْرَةَ لِلَّهِ';
 
   function passportUnits(p) {
@@ -468,7 +489,7 @@
     const photo = st.photos[p.id] ? `<img src="${st.photos[p.id]}" alt="">` : esc(initial(p));
     const nat = tx(pp.nationality);
     const open = st.booksOpen.has(p.id) ? ' open' : '';
-    return [unit(`<div class="bk${open}" data-action="book" data-id="${esc(p.id)}" role="button" tabindex="0" aria-label="${esc(`${t('passport')}: ${p.name}`)}">
+    return [unit(`<div class="bk${open}" data-id="${esc(p.id)}">
       <div class="bk-book">
         <article class="bk-page pp">
           <header class="pp-h stars"><span class="pp-name">${esc(p.name)}</span><span class="pp-tag">${esc(U(t('passport')))} · ${esc(U(nat))}</span></header>
@@ -502,14 +523,26 @@
           </div></div>
         </div>
       </div>
-      <span class="bk-hint" aria-hidden="true">${esc(t('tapToOpen'))}</span>
-    </div>`)];
+    </div>
+    ${docButton('passport', p, !!open)}`)];
   }
 
-  // Passport books stay shut until tapped; a second tap closes them.
-  function toggleBook(b) {
-    b.classList.toggle('open');
-    if (b.classList.contains('open')) st.booksOpen.add(b.dataset.id); else st.booksOpen.delete(b.dataset.id);
+  // Open/close button under a passport or visa. Clicking the document itself does nothing,
+  // so text can be selected and copied without closing it.
+  function docButton(kind, p, open) {
+    return `<div class="doc-actions"><button type="button" class="doc-btn" data-action="${kind}" data-id="${esc(p.id)}" aria-expanded="${open}">
+      ${esc(t(`${open ? 'close' : 'open'}_${kind}`))}</button></div>`;
+  }
+  function setDocButton(btn, kind, open) {
+    btn.textContent = t(`${open ? 'close' : 'open'}_${kind}`);
+    btn.setAttribute('aria-expanded', String(open));
+  }
+
+  function toggleBook(btn) {
+    const b = btn.closest('.unit').querySelector('.bk');
+    const open = b.classList.toggle('open');
+    if (open) st.booksOpen.add(b.dataset.id); else st.booksOpen.delete(b.dataset.id);
+    setDocButton(btn, 'passport', open);
   }
 
   function visaUnits(p) {
@@ -549,11 +582,62 @@
     const note = v.note
       ? (status === 'needsCorrection' ? `<p class="warn">${esc(tx(v.note))}</p>` : `<p class="visa-note">${esc(tx(v.note))}</p>`)
       : '';
-    return [unit(`<article class="card visa">
-      <header class="visa-h"><span class="name">${esc(p.name)}</span><span class="pill ${status}">${esc(U(t(`visa_${status}`)))}</span></header>
-      <div class="visa-body">${rows.join('')}${stamp}</div>
-      ${note}
-    </article>`)];
+    const open = st.envOpen.has(p.id);
+    return [unit(`<div class="env${open ? ' open' : ''}" data-id="${esc(p.id)}">
+      <div class="env-stage">
+        <div class="env-back"></div>
+        <div class="env-flap" aria-hidden="true"><div class="env-flap-out"></div><div class="env-flap-in"></div></div>
+        <div class="env-letter">
+          <article class="card visa">
+            <header class="visa-h"><span class="name">${esc(p.name)}</span><span class="pill ${status}">${esc(U(t(`visa_${status}`)))}</span></header>
+            <div class="visa-body">${rows.join('')}${stamp}</div>
+            ${note}
+          </article>
+        </div>
+        <div class="env-pocket" aria-hidden="true">
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0 100 50 58 100 100" fill="none" stroke="rgba(120,90,40,.28)" stroke-width="1" vector-effect="non-scaling-stroke"/></svg>
+          <span class="env-to">${esc(p.name)}</span>
+        </div>
+        <div class="env-seal" aria-hidden="true"><span class="half l">${wax(++svgN)}</span><span class="half r">${wax(++svgN)}</span></div>
+        <div class="env-stamp" aria-hidden="true">${stampTool(++svgN)}</div>
+      </div>
+    </div>
+    ${docButton('visa', p, open)}`)];
+  }
+
+  // Envelope animation. Opening: the seal breaks, the flap lifts, the letter rises out and lands on top.
+  // Closing: the letter goes back in, the flap shuts, then a wax stamp presses a new seal and leaves.
+  const REDUCED = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const ENV_OPEN_MS = 2150;
+  const ENV_CLOSE_MS = 3600;
+  function toggleEnvelope(btn) {
+    const env = btn.closest('.unit').querySelector('.env');
+    if (env.dataset.busy) return;
+    const open = !env.classList.contains('open');
+    env.dataset.busy = '1';
+    env.classList.remove('open');
+    env.classList.add(open ? 'opening' : 'closing');
+    if (open) st.envOpen.add(env.dataset.id); else st.envOpen.delete(env.dataset.id);
+    setDocButton(btn, 'visa', open);
+    setTimeout(() => {
+      env.classList.remove('opening', 'closing');
+      env.classList.toggle('open', open);
+      delete env.dataset.busy;
+    }, REDUCED() ? 0 : open ? ENV_OPEN_MS : ENV_CLOSE_MS);
+  }
+
+  // The envelope is sized from the letter inside it, which depends on the text and the screen width.
+  let envSizer = null;
+  function sizeEnvelopes() {
+    envSizer?.disconnect();
+    const letters = [...app.querySelectorAll('.env-letter')];
+    if (!letters.length) return;
+    const fit = (el) => el.closest('.env').style.setProperty('--LH', `${el.offsetHeight}px`);
+    letters.forEach(fit);
+    if ('ResizeObserver' in window) {
+      envSizer = new ResizeObserver((entries) => entries.forEach((e) => fit(e.target)));
+      letters.forEach((el) => envSizer.observe(el));
+    }
   }
 
   function baggageUnits(people) {
@@ -724,6 +808,7 @@
     if (focusSel) app.querySelector(focusSel)?.focus({ preventScroll: true });
     if (st.lastStep !== r) window.scrollTo(0, 0);
     st.lastStep = r;
+    if (r === 'results') sizeEnvelopes();
   }
 
   function toggle(arr, id) {
@@ -750,16 +835,13 @@
       case 'cat': toggle(st.cats, b.dataset.id); saveSel(); render(); break;
       case 'to-people': go('people'); break;
       case 'to-categories': go('categories'); break;
-      case 'display': st.booksOpen.clear(); go('results'); break;
-      case 'book': toggleBook(b); break;
+      case 'display': st.booksOpen.clear(); st.envOpen.clear(); go('results'); break;
+      case 'passport': toggleBook(b); break;
+      case 'visa': toggleEnvelope(b); break;
       case 'restart': st.people = []; st.cats = []; saveSel(); go('people'); break;
       case 'pdf': exportPdf(); break;
       default:
     }
-  });
-  app.addEventListener('keydown', (e) => {
-    const b = e.target.closest?.('.bk');
-    if (b && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggleBook(b); }
   });
   app.addEventListener('submit', (e) => {
     if (e.target.id !== 'unlock') return;

@@ -571,10 +571,7 @@ p { margin: 0; }
   height: calc(var(--H) * 2);
   margin: 0 auto;
   perspective: calc(var(--W) * 4);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
 }
-.bk:focus-visible { outline-offset: 6px; border-radius: 12px; }
 .bk-book {
   position: absolute;
   left: 0;
@@ -756,24 +753,25 @@ p { margin: 0; }
   color: var(--gold);
 }
 
-.bk-hint {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: calc(var(--H) * 0.06);
-  text-align: center;
-  font-size: 12px;
+/* Open/close button under a passport or visa */
+.doc-actions { display: flex; justify-content: center; margin-top: 10px; }
+.doc-btn {
+  min-width: 170px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 1.5px solid var(--gold);
+  background: #fff;
+  color: var(--deep);
+  font-size: 14px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-  transition: opacity 0.3s;
 }
-.bk.open .bk-hint { opacity: 0; }
+.doc-btn[aria-expanded='true'] { background: var(--soft-gold); }
+.doc-btn:active { transform: translateY(1px); }
 
 /* PDF and print show the open book flat */
 .pdf-stage .bk-book { transform: none; transition: none; }
 .pdf-stage .bk-cover { transform: none; transition: none; top: auto; bottom: 100%; height: 100%; }
-.pdf-stage .bk-front, .pdf-stage .bk-hint { display: none; }
+.pdf-stage .bk-front, .pdf-stage .doc-actions { display: none; }
 .pdf-stage .bk-back { transform: none; }
 .pdf-stage .bk { --W: 420px; }
 @media (prefers-reduced-motion: reduce) {
@@ -836,6 +834,175 @@ p { margin: 0; }
   border-radius: 8px;
   font-size: 13.5px;
 }
+
+/* Visa envelope. The stage is the envelope body; space above it is kept for the open flap.
+   --LH (letter height) is measured in JS so the envelope always fits the letter. */
+.env {
+  --E: min(100cqw, 460px);
+  --LH: calc(var(--E) * 0.8);
+  --EH: calc(var(--LH) + var(--E) * 0.1);
+  --FH: min(calc(var(--EH) * 0.62), calc(var(--E) * 0.58));
+  --S: calc(var(--E) * 0.19);
+  position: relative;
+  width: var(--E);
+  height: calc(var(--FH) + var(--EH));
+  margin: 0 auto;
+}
+.env-stage {
+  position: absolute;
+  left: 0;
+  top: var(--FH);
+  width: var(--E);
+  height: var(--EH);
+  perspective: calc(var(--E) * 3);
+}
+.env-back {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: linear-gradient(#D9CBA9, #E6DBC0 40%);
+  box-shadow: 0 10px 26px rgba(8, 21, 33, 0.2), 0 1px 3px rgba(8, 21, 33, 0.2);
+}
+.env-pocket {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: 8px;
+  clip-path: polygon(0 0, 50% calc(var(--FH) * 0.8), 100% 0, 100% 100%, 0 100%);
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.35), transparent 45%),
+    #F1E7D0;
+}
+.env-pocket svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.env-to {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 9%;
+  text-align: center;
+  font: italic 400 calc(var(--E) * 0.045) var(--serif);
+  color: rgba(80, 60, 30, 0.75);
+}
+.env-flap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: var(--FH);
+  z-index: 4;
+  transform-origin: 50% 0;
+  transform-style: preserve-3d;
+  transform: rotateX(0deg);
+}
+.env-flap-out, .env-flap-in {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(0 0, 100% 0, 53% 96%, 50% 100%, 47% 96%);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.env-flap-out { background: linear-gradient(#EFE4CA, #E7DABB 70%, #DCCDA8); }
+.env-flap-in { transform: rotateX(180deg); background: linear-gradient(#D3C39E, #E2D5B6); }
+.env-letter {
+  position: absolute;
+  left: 5%;
+  width: 90%;
+  top: calc(var(--E) * 0.04);
+  z-index: 2;
+}
+.env-letter .card { box-shadow: 0 1px 2px rgba(8, 21, 33, 0.12); }
+.env-seal {
+  position: absolute;
+  z-index: 6;
+  left: calc(50% - var(--S) / 2);
+  top: calc(var(--FH) - var(--S) * 0.92);
+  width: var(--S);
+  height: var(--S);
+  filter: drop-shadow(0 2px 2px rgba(60, 10, 10, 0.35));
+}
+.env-seal .half { position: absolute; inset: 0; }
+.env-seal .half.l { clip-path: polygon(0 0, 54% 0, 46% 45%, 52% 60%, 44% 100%, 0 100%); }
+.env-seal .half.r { clip-path: polygon(54% 0, 100% 0, 100% 100%, 44% 100%, 52% 60%, 46% 45%); }
+.env-seal svg, .env-stamp svg { display: block; width: 100%; height: 100%; }
+.env-stamp {
+  position: absolute;
+  z-index: 7;
+  width: calc(var(--S) * 1.36);
+  height: calc(var(--S) * 2.86);
+  left: calc(50% - var(--S) * 0.68);
+  top: calc(var(--FH) - var(--S) * 0.42 - var(--S) * 2.86);
+  transform-origin: 50% 100%;
+  opacity: 0;
+  pointer-events: none;
+  filter: drop-shadow(4px 8px 6px rgba(8, 21, 33, 0.3));
+}
+
+/* Open (resting) */
+.env.open .env-flap { transform: rotateX(180deg); z-index: 1; }
+.env.open .env-letter { z-index: 5; transform: rotate(-1.2deg); }
+.env.open .env-letter .card, .env.opening .env-letter .card { box-shadow: 0 14px 30px rgba(8, 21, 33, 0.22), 0 2px 4px rgba(8, 21, 33, 0.12); }
+.env.open .env-seal { opacity: 0; }
+
+/* Opening */
+.env.opening .env-seal .half.l { animation: env-crack-l 0.45s ease-in both; }
+.env.opening .env-seal .half.r { animation: env-crack-r 0.45s ease-in both; }
+.env.opening .env-flap { animation: env-flap-open 0.6s cubic-bezier(0.4, 0, 0.3, 1) 0.3s both; }
+.env.opening .env-letter { animation: env-letter-out 1.2s ease-in-out 0.9s both; }
+@keyframes env-crack-l { to { transform: translate(-35%, 45%) rotate(-40deg); opacity: 0; } }
+@keyframes env-crack-r { to { transform: translate(35%, 45%) rotate(40deg); opacity: 0; } }
+@keyframes env-flap-open {
+  0% { transform: rotateX(0deg); z-index: 4; }
+  49% { z-index: 4; }
+  50% { z-index: 1; }
+  100% { transform: rotateX(180deg); z-index: 1; }
+}
+@keyframes env-letter-out {
+  0% { transform: translateY(0); z-index: 2; }
+  45% { transform: translateY(calc(-100% - 10px)) rotate(0deg); z-index: 2; }
+  46% { z-index: 5; }
+  72% { transform: translateY(-30%) rotate(1.5deg); }
+  100% { transform: translateY(0) rotate(-1.2deg); z-index: 5; }
+}
+
+/* Closing: letter back in, flap shut, then the stamp presses a fresh seal */
+.env.closing .env-letter { animation: env-letter-in 1.1s ease-in-out both; }
+.env.closing .env-flap { animation: env-flap-close 0.55s cubic-bezier(0.4, 0, 0.3, 1) 1.1s both; }
+.env.closing .env-stamp { animation: env-stamp 1.8s ease-in-out 1.75s both; }
+.env.closing .env-seal { animation: env-seal-in 0.22s ease-out 2.66s both; }
+@keyframes env-letter-in {
+  0% { transform: translateY(0) rotate(-1.2deg); z-index: 5; }
+  50% { transform: translateY(calc(-100% - 10px)) rotate(0deg); z-index: 5; }
+  51% { z-index: 2; }
+  100% { transform: translateY(0); z-index: 2; }
+}
+@keyframes env-flap-close {
+  0% { transform: rotateX(180deg); z-index: 1; }
+  49% { z-index: 1; }
+  50% { z-index: 4; }
+  100% { transform: rotateX(0deg); z-index: 4; }
+}
+@keyframes env-stamp {
+  0% { opacity: 0; transform: translate(260%, -60%) rotate(28deg); }
+  15% { opacity: 1; }
+  38% { transform: translate(0, -22%) rotate(0deg); }
+  50% { transform: translate(0, 0) scale(1, 0.96); }
+  62% { transform: translate(0, 0) scale(1, 1); }
+  76% { transform: translate(0, -24%) rotate(-5deg); opacity: 1; }
+  100% { opacity: 0; transform: translate(520%, -90%) rotate(24deg); }
+}
+@keyframes env-seal-in {
+  0% { opacity: 0; transform: scale(1.3); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .env *, .env { animation: none !important; }
+}
+.content { overflow-x: clip; }
+
+/* PDF and print: just the letter */
+.pdf-stage .env, .pdf-stage .env-stage { position: static; width: auto; height: auto; }
+.pdf-stage .env-back, .pdf-stage .env-flap, .pdf-stage .env-pocket, .pdf-stage .env-seal, .pdf-stage .env-stamp { display: none; }
+.pdf-stage .env-letter { position: static; width: auto; transform: none; animation: none; }
 
 /* Baggage rules */
 .bag { padding: 16px; }
@@ -903,7 +1070,10 @@ p { margin: 0; }
   .unit, .alert, .sec-h { break-inside: avoid; page-break-inside: avoid; }
   .bk-book { transform: none !important; }
   .bk-cover { transform: none !important; top: auto; bottom: 100%; height: 100%; }
-  .bk-front, .bk-hint { display: none; }
+  .bk-front, .doc-actions { display: none; }
+  .env, .env-stage { position: static !important; width: auto !important; height: auto !important; }
+  .env-back, .env-flap, .env-pocket, .env-seal, .env-stamp { display: none !important; }
+  .env-letter { position: static !important; width: auto !important; transform: none !important; animation: none !important; }
   .bk-back { transform: none; }
   .unit { margin-bottom: 14px; }
   .sec-h { break-after: avoid; page-break-after: avoid; }

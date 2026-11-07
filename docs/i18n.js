@@ -100,7 +100,10 @@ window.I18N = {
     tripName: 'Umrah 2026',
     umrahPassport: 'Umrah Passport',
     verseRef: 'Al-Baqarah 2:196',
-    tapToOpen: 'Tap to open',
+    open_passport: 'Open passport',
+    close_passport: 'Close passport',
+    open_visa: 'Open visa',
+    close_visa: 'Close visa',
 
     visaNumber: 'Visa number',
     visaType: 'Type',
@@ -221,7 +224,10 @@ window.I18N = {
     tripName: 'Umre 2026',
     umrahPassport: 'Umre Pasaportu',
     verseRef: 'Bakara 2:196',
-    tapToOpen: 'Açmak için dokunun',
+    open_passport: 'Pasaportu aç',
+    close_passport: 'Pasaportu kapat',
+    open_visa: 'Vizeyi aç',
+    close_visa: 'Vizeyi kapat',
 
     visaNumber: 'Vize numarası',
     visaType: 'Tür',
