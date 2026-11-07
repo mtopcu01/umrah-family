@@ -902,7 +902,12 @@ p { margin: 0; }
   backface-visibility: hidden;
 }
 .env-flap-out { background: linear-gradient(#EFE4CA, #E7DABB 70%, #DCCDA8); }
-.env-flap-in { transform: rotateX(180deg); background: linear-gradient(#D3C39E, #E2D5B6); }
+/* The inside face is turned over, so its triangle is drawn point-up to land wide edge on the hinge */
+.env-flap-in {
+  transform: rotateX(180deg);
+  clip-path: polygon(0 100%, 100% 100%, 53% 4%, 50% 0, 47% 4%);
+  background: linear-gradient(#E2D5B6, #D3C39E);
+}
 .env-letter {
   position: absolute;
   left: 5%;
